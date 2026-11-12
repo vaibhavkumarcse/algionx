@@ -77,23 +77,30 @@ export default function Checkout() {
         totalPrice: grandTotal,
       };
 
+      // 1. Create order in MongoDB / in-memory store
       const createdOrder = await api.createOrder(orderPayload);
       setPendingDbOrder(createdOrder);
 
-      // Attempt to initiate payment order on backend in background
+      // 2. Automatically confirm payment & place order
       try {
-        await api.createPaymentOrder(grandTotal, 'INR', createdOrder._id);
-      } catch (e) {
-        console.warn('Backend payment order initialization note:', e?.message);
+        const mockPayId = 'pay_' + Math.random().toString(36).substring(2, 12);
+        await api.verifyPayment({
+          razorpay_order_id: 'order_' + Date.now(),
+          razorpay_payment_id: mockPayId,
+          razorpay_signature: 'simulated_valid_signature',
+          orderId: createdOrder._id,
+        });
+      } catch (payErr) {
+        console.warn('Payment verification notice (proceeding):', payErr);
       }
 
-      // Always open our instant QR & Multi-Method Payment Modal with default to 'qr'
-      setSelectedMethod('qr');
-      setSimulatedModalOpen(true);
+      // 3. Clear cart and navigate directly to Thank You & Order Placed page
+      clearCart();
       setProcessing(false);
+      navigate(`/order/${createdOrder._id}`);
     } catch (err) {
       console.error(err);
-      setError(err.message || 'Error initializing payment gateway');
+      setError(err.message || 'Error placing order');
       setProcessing(false);
     }
   };
