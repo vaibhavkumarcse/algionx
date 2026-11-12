@@ -26,54 +26,10 @@ export default function SignIn() {
     }
   }, [isAuthenticated, navigate, redirectPath]);
 
-  // Initialize Google Identity Services with client ID from backend
+  // Initialize Google Identity Services
   useEffect(() => {
-    /* global google */
-    const initGoogleAuth = async () => {
-      let activeClientId = '180370796024-pv0a34blg2sc43i3ijl6dg69696a3oec.apps.googleusercontent.com';
-      try {
-        const sys = await api.getSystemStatus();
-        if (sys?.googleAuth?.clientId && sys.googleAuth.clientId !== 'demo_mode_ready') {
-          activeClientId = sys.googleAuth.clientId;
-        }
-      } catch (e) {
-        // use fallback
-      }
-
-      if (typeof window !== 'undefined' && window.google) {
-        try {
-          window.google.accounts.id.initialize({
-            client_id: activeClientId,
-            callback: async (response) => {
-              try {
-                setLoading(true);
-                await loginWithGoogle(response.credential);
-                navigate(redirectPath);
-              } catch (err) {
-                setError(err.message || 'Google authentication failed');
-              } finally {
-                setLoading(false);
-              }
-            },
-          });
-
-          const googleBtnDiv = document.getElementById('googleSignInOfficialBtn');
-          if (googleBtnDiv) {
-            window.google.accounts.id.renderButton(googleBtnDiv, {
-              theme: 'outline',
-              size: 'large',
-              width: '100%',
-              shape: 'pill',
-            });
-          }
-        } catch (err) {
-          console.warn('Google Identity Services note:', err);
-        }
-      }
-    };
-
-    initGoogleAuth();
-  }, [loginWithGoogle, navigate, redirectPath]);
+    // Cleaned up duplicate mount
+  }, []);
 
   // Handle Password Submit
   const handlePasswordSubmit = async (e) => {
@@ -237,9 +193,6 @@ export default function SignIn() {
             </svg>
             <span>Continue with Google</span>
           </button>
-
-          {/* Official Google Button mount */}
-          <div id="googleSignInOfficialBtn" className="w-full flex justify-center"></div>
         </div>
 
         <div className="relative flex items-center justify-center my-6">

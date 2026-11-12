@@ -81,26 +81,13 @@ export default function Checkout() {
       const createdOrder = await api.createOrder(orderPayload);
       setPendingDbOrder(createdOrder);
 
-      // 2. Automatically confirm payment & place order
-      try {
-        const mockPayId = 'pay_' + Math.random().toString(36).substring(2, 12);
-        await api.verifyPayment({
-          razorpay_order_id: 'order_' + Date.now(),
-          razorpay_payment_id: mockPayId,
-          razorpay_signature: 'simulated_valid_signature',
-          orderId: createdOrder._id,
-        });
-      } catch (payErr) {
-        console.warn('Payment verification notice (proceeding):', payErr);
-      }
-
-      // 3. Clear cart and navigate directly to Thank You & Order Placed page
-      clearCart();
+      // 2. Open QR Code Payment directly
+      setSelectedMethod('qr');
+      setSimulatedModalOpen(true);
       setProcessing(false);
-      navigate(`/order/${createdOrder._id}`);
     } catch (err) {
       console.error(err);
-      setError(err.message || 'Error placing order');
+      setError(err.message || 'Error initializing payment gateway');
       setProcessing(false);
     }
   };
@@ -585,7 +572,7 @@ export default function Checkout() {
                 className="w-full py-4 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs tracking-wider uppercase transition-all shadow-xl hover:scale-[1.01] flex items-center justify-center gap-2 mt-2"
               >
                 <ShieldCheck className="w-4 h-4" />
-                <span>Confirm & Pay {formatPrice(grandTotal)}</span>
+                <span>Authorize & Place Order ({formatPrice(grandTotal)})</span>
               </button>
 
               <button
