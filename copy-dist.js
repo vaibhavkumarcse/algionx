@@ -36,3 +36,4 @@ try {
   console.error('Error copying build output to public:', err);
   process.exit(1);
 }
+
