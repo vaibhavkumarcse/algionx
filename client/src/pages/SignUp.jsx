@@ -35,27 +35,61 @@ export default function SignUp() {
     }
   };
 
-  const handleInstantGoogleDemo = async () => {
+  const [googleAccountsModalOpen, setGoogleAccountsModalOpen] = useState(false);
+
+  const availableGoogleAccounts = [
+    {
+      name: 'Vaibhav Kumar',
+      email: 'vaibhavkumarcse@gmail.com',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
+    },
+    {
+      name: 'Julian Hayes',
+      email: 'user@algionx.luxury',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
+    },
+    {
+      name: 'Eleanor Vance',
+      email: 'admin@algionx.luxury',
+      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80',
+    },
+  ];
+
+  const handleSelectGoogleAccount = async (account) => {
     setError('');
     setLoading(true);
+    setGoogleAccountsModalOpen(false);
     try {
-      const inputEmail = document.querySelector('input[type="email"]')?.value || '';
-      const inputName = document.querySelector('input[name="name"]')?.value || '';
-      if (!inputEmail) {
-        setError('Please fill in your email to continue with Google.');
-        setLoading(false);
-        return;
-      }
-      const demoGoogleProfile = {
-        name: inputName || inputEmail.split('@')[0],
-        email: inputEmail,
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
-        id: 'google_user_' + Date.now(),
-      };
-      await loginWithGoogle(null, demoGoogleProfile);
+      await loginWithGoogle(null, {
+        name: account.name,
+        email: account.email,
+        avatar: account.avatar,
+        id: 'google_' + account.email.replace(/[^a-zA-Z0-9]/g, '_'),
+      });
       navigate(redirectPath);
     } catch (err) {
-      setError(err.message || 'Google signup error');
+      setError(err.message || 'Google registration failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCustomGoogleAccount = async (e) => {
+    e.preventDefault();
+    const customEmail = e.target.customEmail.value.trim();
+    if (!customEmail) return;
+    setGoogleAccountsModalOpen(false);
+    setLoading(true);
+    try {
+      await loginWithGoogle(null, {
+        name: customEmail.split('@')[0],
+        email: customEmail,
+        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80',
+        id: 'google_' + Date.now(),
+      });
+      navigate(redirectPath);
+    } catch (err) {
+      setError(err.message || 'Google registration failed');
     } finally {
       setLoading(false);
     }
@@ -122,7 +156,7 @@ export default function SignUp() {
         <div className="mb-6">
           <button
             type="button"
-            onClick={handleInstantGoogleDemo}
+            onClick={() => setGoogleAccountsModalOpen(true)}
             disabled={loading}
             className="w-full flex items-center justify-center gap-3 bg-white hover:bg-zinc-50 border border-zinc-300 hover:border-zinc-400 text-zinc-800 py-3.5 px-4 rounded-full font-semibold text-xs transition-all shadow-xs hover:shadow-sm"
           >
